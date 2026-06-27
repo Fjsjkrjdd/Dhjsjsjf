@@ -111,24 +111,37 @@ if ($isPost) {
             $id    = pint('id');
             $title = pv('title');
             $slug  = pv('slug') ?: slugify($title);
-            $image = upload_image('image_file') ?: pv('image');
             $gallery = [];
             if ($id) {
-                $st = $pdo->prepare('SELECT gallery FROM services WHERE id = ?');
+                $st = $pdo->prepare('SELECT image, gallery FROM services WHERE id = ?');
                 $st->execute([$id]);
                 $row = $st->fetch();
-                if ($row && !empty($row['gallery'])) {
-                    $gallery = json_decode($row['gallery'], true) ?: [];
+                if ($row) {
+                    $gallery = service_gallery($row);
+                }
+            }
+            if (pb('clear_images')) {
+                $gallery = [];
+            } else {
+                $remove = $_POST['remove_images'] ?? [];
+                if (is_array($remove) && $remove) {
+                    $gallery = array_values(array_filter($gallery, function ($img) use ($remove) {
+                        return !in_array($img, $remove, true);
+                    }));
                 }
             }
             $newImages = upload_images('image_files');
+            $one = upload_image('image_file');
+            if ($one) {
+                array_unshift($newImages, $one);
+            }
             if ($newImages) {
                 $gallery = array_merge($gallery, $newImages);
-                if (!$image) {
-                    $image = $newImages[0];
-                }
             }
-            $galleryJson = $gallery ? json_encode(array_values(array_unique($gallery)), JSON_UNESCAPED_UNICODE) : null;
+            $gallery = array_values(array_unique(array_filter($gallery)));
+            $image = $gallery ? $gallery[0] : '';
+            $extra = count($gallery) > 1 ? array_slice($gallery, 1) : [];
+            $galleryJson = $extra ? json_encode($extra, JSON_UNESCAPED_UNICODE) : null;
             $data  = [$slug, $title, pv('short_description'), pv('description'), pint('price'),
                 pv('old_price') !== '' ? pint('old_price') : null, pv('duration'), pv('icon', 'heart'),
                 $image, $galleryJson, pb('is_active'), pb('is_bookable'), pint('sort')];

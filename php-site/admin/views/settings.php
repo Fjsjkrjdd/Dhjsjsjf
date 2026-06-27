@@ -72,35 +72,66 @@ $v = function ($k) use ($s) { return e(isset($s[$k]) ? $s[$k] : ''); };
         <div class="adm-field"><label>Описание (description)</label><textarea name="meta_description" rows="2"><?= $v('meta_description') ?></textarea></div>
     </div>
 
-    <div class="adm-card">
+    <div class="adm-card" id="themeEditor">
         <h2>Цветовая гамма сайта</h2>
-        <p class="adm-hint" style="margin-bottom:1rem">Настройте основные цвета. Изменения сохраняются и применяются на сайте и в админ-панели.</p>
-        <div class="adm-grid cols-3">
-            <?php
-            $colors = [
-                'color_cream' => 'Фон (кремовый)',
-                'color_cream_deep' => 'Фон глубокий',
-                'color_sage' => 'Акцент (шалфей)',
-                'color_sage_dark' => 'Акцент тёмный',
-                'color_sage_light' => 'Акцент светлый',
-                'color_terracotta' => 'Терракота',
-                'color_terracotta_dark' => 'Терракота тёмная',
-                'color_ink' => 'Текст основной',
-                'color_ink_soft' => 'Текст вторичный',
-            ];
-            $colorDefaults = [
-                'color_cream' => '#faf7f2', 'color_cream_deep' => '#f3ede3',
-                'color_sage' => '#6f8f7f', 'color_sage_dark' => '#4f6f60', 'color_sage_light' => '#e7efe9',
-                'color_terracotta' => '#c98a6b', 'color_terracotta_dark' => '#b5734f',
-                'color_ink' => '#2c322f', 'color_ink_soft' => '#5b635e',
-            ];
-            foreach ($colors as $key => $label):
-                $def = $colorDefaults[$key] ?? '#faf7f2';
-                $val = preg_match('/^#[0-9a-fA-F]{3,8}$/', $s[$key] ?? '') ? $s[$key] : $def;
-            ?>
-            <div class="adm-field"><label><?= e($label) ?></label><input type="color" name="<?= e($key) ?>" value="<?= e($val) ?>"></div>
-            <?php endforeach; ?>
+        <p class="adm-hint">Выберите готовую палитру или настройте цвета вручную. Нажмите «Сохранить», чтобы применить на сайте.</p>
+
+        <div class="theme-presets">
+            <span class="lbl">Готовые палитры:</span>
+            <div class="theme-preset-btns">
+                <button type="button" class="btn btn-outline btn-sm" data-theme-preset="classic">Классика</button>
+                <button type="button" class="btn btn-outline btn-sm" data-theme-preset="warm">Тёплая</button>
+                <button type="button" class="btn btn-outline btn-sm" data-theme-preset="fresh">Свежая</button>
+                <button type="button" class="btn btn-outline btn-sm" data-theme-preset="contrast">Контраст</button>
+            </div>
         </div>
+
+        <div class="theme-preview" id="themePreview">
+            <span class="theme-preview-chip" data-chip="cream">Фон</span>
+            <span class="theme-preview-chip" data-chip="sage">Кнопка</span>
+            <span class="theme-preview-chip" data-chip="terracotta">Акцент</span>
+            <span class="theme-preview-chip outline" data-chip="ink">Текст</span>
+        </div>
+
+        <?php
+        $colorGroups = [
+            'Фон страницы' => [
+                'color_cream' => 'Основной фон',
+                'color_cream_deep' => 'Фон карточек и полей',
+            ],
+            'Акцентные цвета' => [
+                'color_sage' => 'Кнопки и ссылки',
+                'color_sage_dark' => 'Кнопки при наведении',
+                'color_sage_light' => 'Подсветка и фон иконок',
+                'color_terracotta' => 'Звёзды отзывов',
+                'color_terracotta_dark' => 'Предупреждения',
+            ],
+            'Текст' => [
+                'color_ink' => 'Заголовки',
+                'color_ink_soft' => 'Обычный текст',
+            ],
+        ];
+        $colorDefaults = [
+            'color_cream' => '#faf7f2', 'color_cream_deep' => '#f3ede3',
+            'color_sage' => '#6f8f7f', 'color_sage_dark' => '#4f6f60', 'color_sage_light' => '#e7efe9',
+            'color_terracotta' => '#c98a6b', 'color_terracotta_dark' => '#b5734f',
+            'color_ink' => '#2c322f', 'color_ink_soft' => '#5b635e',
+        ];
+        foreach ($colorGroups as $groupTitle => $colors): ?>
+            <h3 class="theme-group-title"><?= e($groupTitle) ?></h3>
+            <div class="theme-colors">
+                <?php foreach ($colors as $key => $label):
+                    $def = $colorDefaults[$key] ?? '#faf7f2';
+                    $val = preg_match('/^#[0-9a-fA-F]{3,8}$/', $s[$key] ?? '') ? $s[$key] : $def;
+                ?>
+                <div class="theme-color-row" data-color-key="<?= e($key) ?>">
+                    <input type="color" class="theme-pick" name="<?= e($key) ?>" value="<?= e($val) ?>" aria-label="<?= e($label) ?>">
+                    <input type="text" class="theme-hex" value="<?= e($val) ?>" maxlength="7" pattern="#[0-9a-fA-F]{6}" title="Код цвета, например #6f8f7f">
+                    <span class="theme-color-label"><?= e($label) ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endforeach; ?>
     </div>
 
     <div class="adm-card">
@@ -136,3 +167,4 @@ $v = function ($k) use ($s) { return e(isset($s[$k]) ? $s[$k] : ''); };
 
     <button class="btn btn-primary">Сохранить настройки</button>
 </form>
+<script src="<?= e(asset('assets/js/admin-theme.js')) ?>"></script>

@@ -27,20 +27,29 @@ $icons = ['user'=>'Человек (индивидуально)','users'=>'Пар
             <div class="adm-field"><label>Порядок</label><input type="number" name="sort" value="<?= (int) ($edit['sort'] ?? 0) ?>"></div>
         </div>
         <div class="adm-field">
-            <label>Изображения (можно выбрать несколько)</label>
+            <label>Фото для страницы «Подробнее об услугах»</label>
+            <span class="adm-hint" style="margin-bottom:.5rem">На главной всегда показывается иконка. Фото — только на странице услуг.</span>
             <?php
             $gallery = $edit ? service_gallery($edit) : [];
             if ($gallery): ?>
-                <div class="adm-thumbs">
+                <div class="adm-gallery-list">
                     <?php foreach ($gallery as $img): ?>
-                        <img src="<?= e(asset($img)) ?>" class="adm-thumb" alt="">
+                        <label class="adm-gallery-item">
+                            <img src="<?= e(asset($img)) ?>" alt="">
+                            <span class="adm-gallery-del">
+                                <input type="checkbox" name="remove_images[]" value="<?= e($img) ?>">
+                                Удалить
+                            </span>
+                        </label>
                     <?php endforeach; ?>
                 </div>
+                <label class="adm-check"><input type="checkbox" name="clear_images" value="1"> Удалить все фото (вернуть иконку)</label>
+            <?php else: ?>
+                <p class="adm-hint">Фото не загружены — на сайте будет иконка.</p>
             <?php endif; ?>
-            <input type="hidden" name="image" value="<?= e($edit['image'] ?? '') ?>">
             <input type="file" name="image_file" accept="image/*">
             <input type="file" name="image_files" accept="image/*" multiple>
-            <span class="adm-hint">Первое изображение — обложка карточки. Можно загрузить несколько файлов сразу.</span>
+            <span class="adm-hint">Можно выбрать несколько файлов сразу.</span>
         </div>
         <label class="adm-check"><input type="checkbox" name="is_active" <?= ($edit['is_active'] ?? 1) ? 'checked' : '' ?>> Активна (показывать на сайте)</label>
         <label class="adm-check"><input type="checkbox" name="is_bookable" <?= ($edit['is_bookable'] ?? 1) ? 'checked' : '' ?>> Доступна для записи / оплаты</label>

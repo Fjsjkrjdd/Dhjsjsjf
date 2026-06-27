@@ -29,15 +29,14 @@
                     <?php endif; ?>
                 </div>
                 <div class="service-row-price">
-                    <div class="price-row">
-                        <span class="price"><?= format_price((int) $s['price']) ?> ₽</span>
-                        <?php if (!empty($s['old_price'])): ?><span class="old-price"><?= format_price((int) $s['old_price']) ?> ₽</span><?php endif; ?>
-                    </div>
+                    <?php require __DIR__ . '/partials/price_block.php'; ?>
                     <?php if ($s['is_bookable']): ?>
-                        <a href="<?= e(url('booking') . '?service=' . urlencode($s['slug'])) ?>" class="btn btn-primary btn-sm">Записаться</a>
-                        <?php if (payments_accepted() && (int) $s['price'] > 0): ?>
-                            <a href="<?= e(url('booking') . '?service=' . urlencode($s['slug']) . '&pay=1') ?>" class="btn btn-outline btn-sm">Оплатить онлайн</a>
-                        <?php endif; ?>
+                        <div class="service-row-actions">
+                            <a href="<?= e(url('booking') . '?service=' . urlencode($s['slug'])) ?>" class="btn btn-primary btn-sm">Записаться</a>
+                            <?php if (payments_accepted() && (int) $s['price'] > 0): ?>
+                                <a href="<?= e(url('booking') . '?service=' . urlencode($s['slug']) . '&pay=1') ?>" class="btn btn-outline btn-sm">Оплатить онлайн</a>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
             </article>
