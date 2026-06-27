@@ -1,0 +1,31 @@
+# ЧПУ: все несуществующие пути направляем в index.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
+</IfModule>
+
+# Кодировка по умолчанию
+AddDefaultCharset UTF-8
+
+# Защита конфигурации от прямого доступа
+<FilesMatch "^(config\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Кэширование статики
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+</IfModule>
