@@ -1,0 +1,200 @@
+// Prisma schema for the psychologist website CMS.
+// Database: SQLite (file-based, no external service required).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Admin users who can log into the CMS.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String   @default("Администратор")
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// Singleton site-wide settings (one row, id = 1).
+model SiteSettings {
+  id            Int    @id @default(1)
+  // Branding
+  siteName      String @default("Психолог Чернова Н. В.")
+  ownerName     String @default("Чернова Наталья Викторовна")
+  profession    String @default("Клинический и семейный психолог")
+  tagline       String @default("Помогаю обрести опору внутри себя и гармонию в отношениях")
+  logoText      String @default("Н. Чернова")
+
+  // Contacts
+  phone         String @default("+7 (906) 416-16-55")
+  email         String @default("")
+  address       String @default("Ростов-на-Дону, ул. Московская, 53, офис 5, этаж 5")
+  city          String @default("Ростов-на-Дону")
+  workingHours  String @default("Ежедневно с 10:00 до 21:00")
+  mapEmbed      String @default("")
+
+  // Social links
+  vk            String @default("")
+  telegram      String @default("")
+  whatsapp      String @default("")
+  instagram     String @default("")
+  youtube       String @default("")
+  yandexMaps    String @default("https://yandex.ru/maps/org/psikholog_chernova_n_v_/162803965681")
+
+  // Hero / about media
+  heroPhoto     String @default("")
+  aboutPhoto    String @default("")
+
+  // SEO defaults
+  metaTitle       String @default("Психолог Чернова Н. В. — Ростов-на-Дону")
+  metaDescription String @default("Клинический и семейный психолог в Ростове-на-Дону. Индивидуальные, парные и семейные консультации, арт-терапия, ACT.")
+
+  // Online cash register (онлайн-касса) — YooKassa configuration
+  paymentsEnabled    Boolean @default(false)
+  paymentProvider    String  @default("yookassa")
+  yooKassaShopId     String  @default("")
+  yooKassaSecretKey  String  @default("")
+  // Fiscalization (54-ФЗ) defaults
+  fiscalEnabled      Boolean @default(false)
+  taxSystemCode      Int     @default(2) // УСН доход
+  vatCode            Int     @default(1) // НДС не облагается
+  paymentSubject     String  @default("service")
+  paymentMode        String  @default("full_payment")
+
+  updatedAt DateTime @updatedAt
+}
+
+/// Editable text/image blocks keyed by page + key. Powers inline page editing.
+model ContentBlock {
+  id        String   @id @default(cuid())
+  page      String
+  key       String
+  type      String   @default("text") // text | html | image
+  value     String   @default("")
+  label     String   @default("")
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, key])
+}
+
+/// Standalone editable pages (e.g. privacy policy, custom landing pages).
+model Page {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  content         String   @default("")
+  metaTitle       String   @default("")
+  metaDescription String   @default("")
+  isPublished     Boolean  @default(true)
+  showInMenu      Boolean  @default(false)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+/// Services offered, with price/duration. Shown on home + services page.
+model Service {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  shortDescription String   @default("")
+  description      String   @default("")
+  price            Int      @default(0)
+  oldPrice         Int?
+  priceSuffix      String   @default("")
+  duration         String   @default("")
+  image            String   @default("")
+  icon             String   @default("")
+  isActive         Boolean  @default(true)
+  isBookable       Boolean  @default(true)
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  orders Order[]
+}
+
+/// Diplomas / certificates gallery (horizontal scroll + lightbox).
+model Diploma {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  image       String
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Client reviews.
+model Review {
+  id          String   @id @default(cuid())
+  author      String
+  text        String
+  rating      Int      @default(5)
+  source      String   @default("")
+  date        String   @default("")
+  isPublished Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Blog articles.
+model Article {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  excerpt         String    @default("")
+  content         String    @default("")
+  cover           String    @default("")
+  category        String    @default("")
+  isPublished     Boolean   @default(true)
+  publishedAt     DateTime  @default(now())
+  metaTitle       String    @default("")
+  metaDescription String    @default("")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+/// Education / experience timeline entries (about page).
+model Education {
+  id          String   @id @default(cuid())
+  title       String
+  institution String   @default("")
+  year        String   @default("")
+  description String   @default("")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Bookings / orders with online payment via the cash register.
+model Order {
+  id             String   @id @default(cuid())
+  serviceId      String?
+  service        Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceTitle   String   @default("")
+  customerName   String
+  customerPhone  String
+  customerEmail  String   @default("")
+  preferredDate  String   @default("")
+  comment        String   @default("")
+  amount         Int      @default(0)
+  status         String   @default("new") // new | confirmed | paid | cancelled | completed
+
+  // Payment / cash register fields
+  paymentId      String?  // external provider payment id
+  paymentStatus  String   @default("pending") // pending | waiting_for_capture | succeeded | canceled
+  paymentUrl     String?
+  receiptStatus  String   @default("none") // none | pending | registered | failed
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
