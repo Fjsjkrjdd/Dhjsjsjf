@@ -4,7 +4,8 @@
 <form method="post" action="<?= e(admin_url('diplomas')) ?>" enctype="multipart/form-data" class="adm-card">
     <?= csrf_field() ?>
     <h2>Добавить диплом</h2>
-    <div class="adm-field"><label>Изображение *</label><input type="file" name="image_file" accept="image/*" required></div>
+    <div class="adm-field"><label>Изображения * (можно несколько)</label><input type="file" name="image_files" accept="image/*" multiple></div>
+    <div class="adm-field"><label>Или одно изображение</label><input type="file" name="image_file" accept="image/*"></div>
     <div class="adm-grid cols-2">
         <div class="adm-field"><label>Подпись</label><input name="title" placeholder="Напр.: Московский институт психоанализа"></div>
         <div class="adm-field"><label>Порядок</label><input type="number" name="sort" value="<?= count($items) ?>"></div>

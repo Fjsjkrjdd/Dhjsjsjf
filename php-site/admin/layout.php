@@ -2,6 +2,7 @@
 /** Макет админ-панели. @var string $content @var string $title @var array $user */
 $nav = [
     'dashboard' => 'Обзор',
+    'home-blocks' => 'Блоки главной',
     'content'   => 'Тексты страниц',
     'services'  => 'Услуги и цены',
     'diplomas'  => 'Дипломы',
@@ -22,6 +23,7 @@ $active = $_GET['p'] ?? 'dashboard';
     <title><?= e($title ?? 'Админ-панель') ?> — Админ-панель</title>
     <link rel="stylesheet" href="<?= e(asset('assets/css/style.css')) ?>">
     <link rel="stylesheet" href="<?= e(asset('assets/css/admin.css')) ?>">
+    <?= theme_css_tag() ?>
 </head>
 <body class="admin-body">
 <div class="admin-shell">
@@ -42,15 +44,22 @@ $active = $_GET['p'] ?? 'dashboard';
             <a href="<?= e(admin_url('logout')) ?>" class="admin-logout">Выйти</a>
         </div>
     </aside>
+    <div class="admin-overlay" id="admOverlay"></div>
     <main class="admin-main">
         <?php if ($f = flash()): ?><div class="admin-flash"><?= e($f) ?></div><?php endif; ?>
         <?= $content ?>
     </main>
 </div>
 <script>
-document.getElementById('admToggle').addEventListener('click',function(){
-  document.getElementById('admSidebar').classList.toggle('open');
-});
+(function(){
+  var sidebar=document.getElementById('admSidebar');
+  var overlay=document.getElementById('admOverlay');
+  var toggle=document.getElementById('admToggle');
+  function closeMenu(){sidebar.classList.remove('open');overlay.classList.remove('open');}
+  function openMenu(){sidebar.classList.add('open');overlay.classList.add('open');}
+  if(toggle){toggle.addEventListener('click',function(){sidebar.classList.contains('open')?closeMenu():openMenu();});}
+  if(overlay){overlay.addEventListener('click',closeMenu);}
+})();
 </script>
 </body>
 </html>
