@@ -1,5 +1,5 @@
 <?php /** @var array $s */
-$v = fn(string $k) => e($s[$k] ?? '');
+$v = function ($k) use ($s) { return e(isset($s[$k]) ? $s[$k] : ''); };
 ?>
 <form method="post" action="<?= e(admin_url('settings')) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
