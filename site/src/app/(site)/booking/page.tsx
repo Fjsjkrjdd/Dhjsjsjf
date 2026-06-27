@@ -5,20 +5,10 @@ import { isPaymentsConfigured } from "@/lib/yookassa";
 import { telHref } from "@/lib/socials";
 import BookingForm from "@/components/site/BookingForm";
 import { PhoneIcon, MapPinIcon, ClockIcon, CheckIcon } from "@/components/icons";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Запись на консультацию" };
-
-const DEFAULTS = {
-  title: { value: "Запись на консультацию", label: "Заголовок" },
-  subtitle: {
-    value:
-      "Заполните форму — и я свяжусь с вами, чтобы подтвердить удобное время. При желании можно сразу оплатить консультацию онлайн.",
-    label: "Подзаголовок",
-  },
-  benefit_1: { value: "Конфиденциально и без осуждения", label: "Преимущество 1" },
-  benefit_2: { value: "Очно в Ростове-на-Дону и онлайн", label: "Преимущество 2" },
-  benefit_3: { value: "Удобное время, в том числе вечером", label: "Преимущество 3" },
-};
+export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<{ service?: string }>;
 
@@ -26,7 +16,7 @@ export default async function BookingPage({ searchParams }: { searchParams: Sear
   const { service: serviceSlug } = await searchParams;
   const [settings, blocks, services] = await Promise.all([
     getSettings(),
-    getBlocks("booking", DEFAULTS),
+    getBlocks("booking", BLOCK_DEFAULTS.booking.blocks),
     prisma.service.findMany({ where: { isActive: true, isBookable: true }, orderBy: { order: "asc" } }),
   ]);
   const paymentsEnabled = isPaymentsConfigured(settings);

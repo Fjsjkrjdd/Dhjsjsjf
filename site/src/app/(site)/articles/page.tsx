@@ -3,14 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getBlocks } from "@/lib/content";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Статьи" };
 export const dynamic = "force-dynamic";
-
-const DEFAULTS = {
-  title: { value: "Статьи", label: "Заголовок" },
-  subtitle: { value: "Делюсь полезными материалами и размышлениями из практики.", label: "Подзаголовок" },
-};
 
 function formatDate(d: Date) {
   return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(d);
@@ -18,7 +14,7 @@ function formatDate(d: Date) {
 
 export default async function ArticlesPage() {
   const [blocks, articles] = await Promise.all([
-    getBlocks("articles", DEFAULTS),
+    getBlocks("articles", BLOCK_DEFAULTS.articles.blocks),
     prisma.article.findMany({ where: { isPublished: true }, orderBy: { publishedAt: "desc" } }),
   ]);
 

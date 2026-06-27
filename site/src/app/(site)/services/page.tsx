@@ -3,27 +3,14 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getBlocks, formatPrice } from "@/lib/content";
 import { ServiceIcon, ClockIcon, ArrowRightIcon } from "@/components/icons";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Услуги и цены" };
 export const dynamic = "force-dynamic";
 
-const DEFAULTS = {
-  title: { value: "Услуги и цены", label: "Заголовок страницы" },
-  subtitle: {
-    value:
-      "Работаю индивидуально, с парами и семьями, в группах — очно в Ростове-на-Дону и онлайн. Ниже подробное описание форматов и стоимости.",
-    label: "Подзаголовок страницы",
-  },
-  note: {
-    value:
-      "Стоимость и продолжительность встреч уточняйте при записи. Первая встреча — знакомство и определение запроса.",
-    label: "Примечание под услугами",
-  },
-};
-
 export default async function ServicesPage() {
   const [blocks, services] = await Promise.all([
-    getBlocks("services", DEFAULTS),
+    getBlocks("services", BLOCK_DEFAULTS.services.blocks),
     prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }),
   ]);
 

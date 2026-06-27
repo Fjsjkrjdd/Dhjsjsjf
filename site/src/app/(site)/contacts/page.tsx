@@ -4,17 +4,13 @@ import { getSettings, getBlocks } from "@/lib/content";
 import { getSocialLinks, telHref } from "@/lib/socials";
 import SocialBar from "@/components/site/SocialBar";
 import { PhoneIcon, MapPinIcon, ClockIcon } from "@/components/icons";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Контакты" };
 export const dynamic = "force-dynamic";
 
-const DEFAULTS = {
-  title: { value: "Контакты", label: "Заголовок" },
-  subtitle: { value: "Буду рада видеть вас на консультации — очно или онлайн.", label: "Подзаголовок" },
-};
-
 export default async function ContactsPage() {
-  const [settings, blocks] = await Promise.all([getSettings(), getBlocks("contacts", DEFAULTS)]);
+  const [settings, blocks] = await Promise.all([getSettings(), getBlocks("contacts", BLOCK_DEFAULTS.contacts.blocks)]);
   const socials = getSocialLinks(settings);
 
   return (

@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Сайт психолога с CMS и онлайн-кассой
 
-## Getting Started
+Полноценный сайт психолога (на примере **Чернова Н. В.**, Ростов-на-Дону) с собственной
+админ-панелью / CMS для редактирования всех страниц и подготовленной интеграцией
+онлайн-кассы (ЮKassa) с формированием чеков по 54-ФЗ.
 
-First, run the development server:
+Построено на **Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Prisma + SQLite**.
+
+## Возможности
+
+### Публичный сайт
+- Главная страница: обложка с фото, услуги, методы, дипломы, этапы работы, отзывы, призыв к записи.
+- **Услуги и цены** — данные взяты из профиля на Яндекс Картах (индивидуальная 4000 ₽, парная 6000 ₽, женская арт-группа 2500 ₽, ACT game 2000 ₽, онлайн).
+- **Обо мне** — биография, образование/квалификация и **галерея дипломов с горизонтальной прокруткой и увеличением по клику** (лайтбокс со стрелками и клавишами).
+- **Отзывы**, **Статьи** (блог), **Контакты** (карта + соцсети), **Запись/оплата**.
+- Адаптивная вёрстка, аккуратный «тёплый» дизайн, SEO-метаданные.
+
+### Админ-панель / CMS (`/admin`)
+Полное редактирование сайта без программиста:
+- **Тексты страниц** — все заголовки и тексты на главной и других страницах.
+- **Услуги и цены** — создание/редактирование/удаление, цена, длительность, описание, иконка, фото.
+- **Дипломы** — загрузка изображений, подписи, порядок.
+- **Образование** — список квалификаций для страницы «Обо мне».
+- **Отзывы** — добавление/редактирование с оценкой и источником.
+- **Статьи** — блог с HTML-редактором, обложкой и SEO.
+- **Страницы** — произвольные страницы (например, политика конфиденциальности).
+- **Заявки и оплаты** — все заявки с сайта, статусы и статусы онлайн-оплат.
+- **Настройки сайта** — контакты, соцсети (ВК, Telegram, WhatsApp, Instagram, YouTube, Яндекс Карты), фото, SEO, карта.
+- **Онлайн-касса** — настройка ЮKassa и фискализации (54-ФЗ).
+- **Профиль** — смена пароля.
+
+### Онлайн-касса (ЮKassa)
+- Создание платежа и редирект на защищённую страницу оплаты.
+- Формирование кассового чека (54-ФЗ): система налогообложения, ставка НДС, предмет/способ расчёта.
+- Webhook для обновления статуса оплаты: `POST /api/payments/webhook`.
+- Подтверждение оплаты на странице успеха.
+
+## Быстрый старт
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd site
+cp .env.example .env        # при необходимости отредактируйте
+npm install
+npx prisma migrate deploy   # создать БД (или: npm run db:push)
+npm run db:seed             # загрузить стартовые данные
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Админ-панель: `http://localhost:3000/admin`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Данные для входа по умолчанию** (заданы в `.env`, смените пароль после первого входа):
+- E-mail: `admin@chernova-psy.ru`
+- Пароль: `admin12345`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Переменные окружения (`.env`)
 
-## Learn More
+| Переменная | Назначение |
+|---|---|
+| `DATABASE_URL` | Путь к SQLite, по умолчанию `file:./dev.db` |
+| `AUTH_SECRET` | Секрет для подписи сессий (≥32 символов) — **обязательно сменить в проде** |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Учётка администратора для сидера |
+| `YOOKASSA_SHOP_ID` / `YOOKASSA_SECRET_KEY` | Реквизиты ЮKassa (можно задать и в админке) |
+| `NEXT_PUBLIC_BASE_URL` | Базовый URL для возврата после оплаты |
 
-To learn more about Next.js, take a look at the following resources:
+## Подключение онлайн-кассы
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. В личном кабинете ЮKassa получите `shopId` и секретный ключ.
+2. В админке → **Настройки сайта → Онлайн-касса**: включите оплату, введите данные, при необходимости включите чеки (54-ФЗ).
+3. В ЮKassa укажите URL уведомлений: `https://ВАШ_ДОМЕН/api/payments/webhook`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+После этого на странице записи появится опция онлайн-оплаты.
 
-## Deploy on Vercel
+## Сборка и продакшн
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run build
+npm run start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Что нужно заполнить владельцу сайта
+
+Стартовые данные взяты из открытых источников (Яндекс Карты). Перед запуском через админ-панель:
+- загрузите **главное фото** и **дипломы/сертификаты** (есть в профиле ВКонтакте/Яндекс);
+- уточните **образование** (раздел «Образование») — сейчас там заполнители;
+- замените **демонстрационные отзывы** на реальные;
+- проверьте контакты и ссылки на соцсети (раздел «Настройки»).
+
+## Технические заметки
+
+- Загруженные файлы сохраняются в `public/uploads`. На постоянном сервере (VPS) они сохраняются между запросами; на serverless-платформах используйте внешнее хранилище (S3 и т. п.).
+- Контентные страницы рендерятся динамически (`force-dynamic`), поэтому изменения из админки видны сразу.
+- БД SQLite (`prisma/dev.db`) не коммитится в репозиторий — создаётся миграцией и сидером.
+
+## Структура
+
+```
+site/
+├─ prisma/
+│  ├─ schema.prisma        # модели данных
+│  └─ seed.ts              # стартовые данные
+├─ src/
+│  ├─ app/
+│  │  ├─ (site)/           # публичные страницы
+│  │  ├─ admin/            # CMS (login + (panel) + _actions)
+│  │  └─ api/              # booking + payments webhook
+│  ├─ components/          # UI (site/ и admin/)
+│  └─ lib/                 # prisma, auth, content, yookassa, socials
+└─ public/uploads/         # загруженные изображения
+```

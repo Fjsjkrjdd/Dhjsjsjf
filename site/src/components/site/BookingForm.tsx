@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatPrice } from "@/lib/content";
 
 export type BookingService = {
@@ -143,7 +144,7 @@ export default function BookingForm({
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--color-sage)]" />
         <span>
           Я согласен(а) на обработку персональных данных в соответствии с{" "}
-          <a href="/privacy" className="text-sage-dark underline">политикой конфиденциальности</a>.
+          <Link href="/privacy" className="text-sage-dark underline">политикой конфиденциальности</Link>.
         </span>
       </label>
 

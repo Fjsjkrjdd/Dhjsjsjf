@@ -3,21 +3,14 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSettings, getBlocks } from "@/lib/content";
 import ReviewCard from "@/components/site/ReviewCard";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Отзывы" };
 export const dynamic = "force-dynamic";
 
-const DEFAULTS = {
-  title: { value: "Отзывы клиентов", label: "Заголовок" },
-  subtitle: {
-    value: "Все отзывы публикуются с согласия клиентов. Конфиденциальность гарантирована.",
-    label: "Подзаголовок",
-  },
-};
-
 export default async function ReviewsPage() {
   const [blocks, reviews, settings] = await Promise.all([
-    getBlocks("reviews", DEFAULTS),
+    getBlocks("reviews", BLOCK_DEFAULTS.reviews.blocks),
     prisma.review.findMany({ where: { isPublished: true }, orderBy: { order: "asc" } }),
     getSettings(),
   ]);

@@ -4,31 +4,15 @@ import { getSettings, getBlocks } from "@/lib/content";
 import PortraitFrame from "@/components/site/PortraitFrame";
 import DiplomaGallery from "@/components/site/DiplomaGallery";
 import { CheckIcon } from "@/components/icons";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
 export const metadata: Metadata = { title: "Обо мне" };
 export const dynamic = "force-dynamic";
 
-const DEFAULTS = {
-  title: { value: "Обо мне", label: "Заголовок" },
-  lead: {
-    value:
-      "Я — клинический и семейный психолог. Помогаю людям справляться с тревогой, страхами и кризисами в отношениях, бережно и без осуждения сопровождая их на пути к себе.",
-    label: "Вводный абзац",
-  },
-  body: {
-    value:
-      "В своей работе я опираюсь на методы с доказанной эффективностью: клиническую психологию, системную семейную терапию, ACT (терапию принятия и ответственности) и эмоционально-фокусированный подход. Веду индивидуальные консультации, работаю с парами и семьями, провожу женскую арт-терапевтическую группу и терапевтическую игру ACT.\n\nЯ верю, что у каждого человека есть внутренние ресурсы для изменений — моя задача помочь их обнаружить и опереться на них. Гарантирую полную конфиденциальность.",
-    label: "Основной текст (абзацы через пустую строку)",
-  },
-  edu_title: { value: "Образование и квалификация", label: "Заголовок блока образования" },
-  diplomas_title: { value: "Дипломы и сертификаты", label: "Заголовок галереи дипломов" },
-  diplomas_hint: { value: "Нажмите на изображение, чтобы увеличить", label: "Подсказка к галерее" },
-};
-
 export default async function AboutPage() {
   const [settings, blocks, education, diplomas] = await Promise.all([
     getSettings(),
-    getBlocks("about", DEFAULTS),
+    getBlocks("about", BLOCK_DEFAULTS.about.blocks),
     prisma.education.findMany({ orderBy: { order: "asc" } }),
     prisma.diploma.findMany({ where: { isPublished: true }, orderBy: { order: "asc" } }),
   ]);

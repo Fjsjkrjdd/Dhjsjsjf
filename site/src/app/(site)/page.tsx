@@ -16,38 +16,9 @@ import {
   HeartIcon,
 } from "@/components/icons";
 
-export const dynamic = "force-dynamic";
+import { BLOCK_DEFAULTS } from "@/lib/blockDefaults";
 
-const HOME_DEFAULTS = {
-  hero_eyebrow: { value: "Клинический и семейный психолог · Ростов-на-Дону", label: "Хедлайн: надпись над заголовком" },
-  hero_title: { value: "Помогаю вернуть опору, спокойствие и тёплые отношения", label: "Хедлайн: заголовок" },
-  hero_subtitle: {
-    value:
-      "Бережная работа с тревогой, страхами, неуверенностью в себе и кризисами в отношениях. Индивидуально, в паре и в группе — очно в Ростове-на-Дону и онлайн.",
-    label: "Хедлайн: подзаголовок",
-  },
-  intro_title: { value: "Если вы здесь — значит, готовы к переменам", label: "Блок «О подходе»: заголовок" },
-  intro_text: {
-    value:
-      "Любой симптом или сложность в отношениях — это «звоночек» психики. Вместе мы бережно исследуем его причины и найдём путь к спокойствию и зрелой опоре внутри себя. Я работаю экологично, в комфортном для вас темпе и гарантирую полную конфиденциальность.",
-    label: "Блок «О подходе»: текст",
-  },
-  services_title: { value: "Услуги и цены", label: "Услуги: заголовок" },
-  services_subtitle: { value: "Выберите формат, который подходит именно вам", label: "Услуги: подзаголовок" },
-  methods_title: { value: "Методы, в которых я работаю", label: "Методы: заголовок" },
-  diplomas_title: { value: "Образование, дипломы и сертификаты", label: "Дипломы: заголовок" },
-  diplomas_subtitle: {
-    value: "Нажмите на изображение, чтобы рассмотреть подробнее",
-    label: "Дипломы: подзаголовок",
-  },
-  steps_title: { value: "Как проходит работа", label: "Этапы: заголовок" },
-  reviews_title: { value: "Отзывы клиентов", label: "Отзывы: заголовок" },
-  cta_title: { value: "Сделайте первый шаг к себе", label: "Призыв: заголовок" },
-  cta_text: {
-    value: "Запишитесь на консультацию в удобное время — очно или онлайн.",
-    label: "Призыв: текст",
-  },
-};
+export const dynamic = "force-dynamic";
 
 const METHODS = [
   { title: "Клиническая психология", text: "Профессиональная диагностика и работа с тревожными, депрессивными и невротическими состояниями." },
@@ -66,7 +37,7 @@ const STEPS = [
 export default async function HomePage() {
   const [settings, blocks, services, diplomas, reviews] = await Promise.all([
     getSettings(),
-    getBlocks("home", HOME_DEFAULTS),
+    getBlocks("home", BLOCK_DEFAULTS.home.blocks),
     prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }),
     prisma.diploma.findMany({ where: { isPublished: true }, orderBy: { order: "asc" } }),
     prisma.review.findMany({ where: { isPublished: true }, orderBy: { order: "asc" }, take: 6 }),
