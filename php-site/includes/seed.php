@@ -3,6 +3,16 @@
 
 function db_seed(PDO $pdo): void
 {
+    // Идемпотентность: очищаем целевые таблицы, чтобы повторный запуск установки
+    // (например, после прерванной первой попытки) не приводил к дублям и ошибкам.
+    foreach (['users', 'settings', 'services', 'diplomas', 'reviews', 'education', 'articles', 'pages', 'content_blocks'] as $t) {
+        try {
+            $pdo->exec('DELETE FROM ' . $t);
+        } catch (Throwable $e) {
+            // таблица может ещё не существовать — игнорируем
+        }
+    }
+
     // --- Администратор -----------------------------------------------------
     $email = 'admin@chernova-psy.ru';
     $hash  = password_hash('admin12345', PASSWORD_DEFAULT);
@@ -114,7 +124,7 @@ function db_seed(PDO $pdo): void
     ]);
 
     // --- Редактируемые тексты страниц --------------------------------------
-    require __DIR__ . '/blocks.php';
+    require_once __DIR__ . '/blocks.php';
     $st = $pdo->prepare("INSERT INTO content_blocks (page, bkey, label, bvalue, sort) VALUES (?,?,?,?,?)");
     $i = 0;
     foreach (block_defaults() as $page => $blocks) {

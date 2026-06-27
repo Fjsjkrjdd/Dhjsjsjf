@@ -159,8 +159,17 @@ function db_install(PDO $pdo): void
     // Признак того, что первичное наполнение уже выполнено.
     $done = $pdo->query("SELECT svalue FROM settings WHERE skey = 'installed'")->fetchColumn();
     if (!$done) {
-        require __DIR__ . '/seed.php';
-        db_seed($pdo);
-        $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES ('installed', '1')")->execute();
+        require_once __DIR__ . '/seed.php';
+        try {
+            $pdo->beginTransaction();
+            db_seed($pdo);
+            $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES ('installed', '1')")->execute();
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
     }
 }

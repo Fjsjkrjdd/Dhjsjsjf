@@ -1,6 +1,8 @@
 <?php
 /** Определения редактируемых текстовых блоков по страницам. */
 
+if (!function_exists('block_pages')):
+
 function block_pages(): array
 {
     return [
@@ -67,3 +69,5 @@ function block_defaults(): array
         ],
     ];
 }
+
+endif;
