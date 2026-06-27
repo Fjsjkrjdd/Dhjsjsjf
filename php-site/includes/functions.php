@@ -1,6 +1,27 @@
 <?php
 /** Общие функции-помощники. */
 
+// --- Полифилы для PHP 7.4 (функции появились в PHP 8.0) -----------------
+if (!function_exists('str_starts_with')) {
+    function str_starts_with($haystack, $needle)
+    {
+        return $needle === '' || strncmp((string) $haystack, (string) $needle, strlen((string) $needle)) === 0;
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with($haystack, $needle)
+    {
+        $needle = (string) $needle;
+        return $needle === '' || substr((string) $haystack, -strlen($needle)) === $needle;
+    }
+}
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle)
+    {
+        return $needle === '' || strpos((string) $haystack, (string) $needle) !== false;
+    }
+}
+
 require_once __DIR__ . '/db.php';
 
 /* ----------------------------- Базовое -------------------------------- */
@@ -123,7 +144,8 @@ function set_setting(string $key, string $value): void
     if ($driver === 'mysql') {
         $sql = 'INSERT INTO settings (skey, svalue) VALUES (?, ?) ON DUPLICATE KEY UPDATE svalue = VALUES(svalue)';
     } else {
-        $sql = 'INSERT INTO settings (skey, svalue) VALUES (?, ?) ON CONFLICT(skey) DO UPDATE SET svalue = excluded.svalue';
+        // INSERT OR REPLACE поддерживается всеми версиями SQLite (без UPSERT 3.24+).
+        $sql = 'INSERT OR REPLACE INTO settings (skey, svalue) VALUES (?, ?)';
     }
     db()->prepare($sql)->execute([$key, $value]);
 }

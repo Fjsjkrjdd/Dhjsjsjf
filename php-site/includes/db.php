@@ -19,7 +19,6 @@ function db(): PDO
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
-        $pdo->driver_name = 'mysql';
     } else {
         $path = $cfg['sqlite_path'];
         $dir  = dirname($path);

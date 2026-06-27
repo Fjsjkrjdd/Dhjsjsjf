@@ -14,7 +14,7 @@ if ($uri !== '/' && file_exists($path) && !is_dir($path)) {
 }
 
 // Админка.
-if ($uri === '/admin' || str_starts_with($uri, '/admin/')) {
+if ($uri === '/admin' || strpos($uri, '/admin/') === 0) {
     require __DIR__ . '/admin/index.php';
     return true;
 }
