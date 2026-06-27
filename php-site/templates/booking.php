@@ -39,7 +39,7 @@
                         <span>Оплатить онлайн картой (<span data-pay-amount><?= $services ? format_price((int) $services[0]['price']) : '0' ?></span> ₽). Вы будете перенаправлены на защищённую страницу оплаты<?= $payments_ready ? ', чек придёт на e-mail' : '' ?>.</span>
                     </label>
                     <?php if (!$payments_ready): ?>
-                        <p class="adm-hint" style="margin-top:-.4rem">Онлайн-оплата включена. Укажите shopId и секретный ключ ЮKassa в настройках (для Точка Банк — данные из личного кабинета эквайринга).</p>
+                        <p class="form-hint" style="margin-top:-.4rem">Онлайн-оплата включена. Укажите shopId и секретный ключ ЮKassa в настройках (для Точка Банк — данные из личного кабинета эквайринга).</p>
                     <?php endif; ?>
                 <?php endif; ?>
 
