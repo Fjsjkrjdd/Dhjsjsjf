@@ -1,4 +1,6 @@
-<?php /** @var array $blocks $services; @var string $selected; @var bool $payments_enabled */ ?>
+<?php
+/** @var array $blocks $services; @var string $selected; @var bool $payments_enabled; @var bool $payments_ready; @var bool $pay_default */
+?>
 <section class="section">
     <div class="container">
         <h1><?= e($blocks['title']) ?></h1>
@@ -26,16 +28,19 @@
                     <label class="field"><span>Телефон *</span><input type="tel" name="phone" required placeholder="+7 (___) ___-__-__"></label>
                 </div>
                 <div class="field-row">
-                    <label class="field"><span>E-mail</span><input type="email" name="email" placeholder="email@example.com"></label>
+                    <label class="field"><span>E-mail</span><input type="email" name="email" placeholder="email@example.com" <?= $pay_default ? 'required' : '' ?>></label>
                     <label class="field"><span>Удобная дата / время</span><input type="text" name="preferred_date" placeholder="Например, будни после 18:00"></label>
                 </div>
                 <label class="field"><span>Комментарий</span><textarea name="comment" rows="3" placeholder="Кратко опишите ваш запрос (по желанию)"></textarea></label>
 
                 <?php if ($payments_enabled): ?>
                     <label class="check-box">
-                        <input type="checkbox" name="pay" value="1" data-pay-toggle>
-                        <span>Оплатить онлайн картой (<span data-pay-amount><?= $services ? format_price((int) $services[0]['price']) : '0' ?></span> ₽). Вы будете перенаправлены на защищённую страницу оплаты, чек придёт на e-mail.</span>
+                        <input type="checkbox" name="pay" value="1" data-pay-toggle <?= $pay_default ? 'checked' : '' ?>>
+                        <span>Оплатить онлайн картой (<span data-pay-amount><?= $services ? format_price((int) $services[0]['price']) : '0' ?></span> ₽). Вы будете перенаправлены на защищённую страницу оплаты<?= $payments_ready ? ', чек придёт на e-mail' : '' ?>.</span>
                     </label>
+                    <?php if (!$payments_ready): ?>
+                        <p class="adm-hint" style="margin-top:-.4rem">Онлайн-оплата включена. Укажите shopId и секретный ключ ЮKassa в настройках (для Точка Банк — данные из личного кабинета эквайринга).</p>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <label class="check-box">
@@ -43,7 +48,14 @@
                     <span>Я согласен(а) на обработку персональных данных в соответствии с <a href="<?= e(url('privacy')) ?>">политикой конфиденциальности</a>.</span>
                 </label>
 
-                <button type="submit" class="btn btn-primary btn-block">Отправить заявку</button>
+                <div class="booking-submit-row">
+                    <button type="submit" class="btn btn-primary btn-block">Отправить заявку</button>
+                    <?php if ($payments_enabled): ?>
+                        <button type="submit" name="pay" value="1" class="btn btn-outline btn-block booking-pay-btn" data-pay-submit>
+                            Оплатить консультацию онлайн — <span data-pay-amount-btn><?= $services ? format_price((int) $services[0]['price']) : '0' ?></span> ₽
+                        </button>
+                    <?php endif; ?>
+                </div>
             </form>
 
             <aside class="booking-aside">

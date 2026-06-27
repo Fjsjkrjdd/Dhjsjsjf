@@ -84,9 +84,16 @@ img{max-width:100%;display:block}
 .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
 .card{background:#fff;border:1px solid var(--cream-deep);border-radius:var(--radius);padding:24px;box-shadow:0 4px 14px rgba(44,50,47,.04)}
 .service-card{display:flex;flex-direction:column}
-.service-ic{width:48px;height:48px;border-radius:14px;background:var(--sage-light);color:var(--sage-dark);display:flex;align-items:center;justify-content:center}
+.service-ic{width:48px;height:48px;border-radius:14px;background:var(--sage-light);color:var(--sage-dark);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
 .service-ic svg{width:26px;height:26px}
 .service-ic.big{width:56px;height:56px}
+.service-ic-photo{width:72px;height:72px;border-radius:14px;padding:0;background:var(--cream-deep)}
+.service-ic-photo img{width:100%;height:100%;object-fit:cover;border-radius:14px}
+.service-row-photo{width:88px;height:88px;border-radius:16px;overflow:hidden;flex-shrink:0;background:var(--cream-deep)}
+.service-row-photo img{width:100%;height:100%;object-fit:cover}
+.service-gallery-mini{display:flex;gap:.4rem;margin-top:.7rem}
+.service-gallery-mini img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--cream-deep)}
+.service-actions{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:flex-end}
 .service-card h3{margin-top:1.1rem;font-size:1.35rem}
 .card-text{margin-top:.5rem;font-size:.92rem;color:var(--ink-soft);flex:1}
 .service-foot{margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--cream-deep);display:flex;align-items:flex-end;justify-content:space-between;gap:.5rem}
@@ -137,8 +144,10 @@ img{max-width:100%;display:block}
 .review-card figcaption{margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--cream-deep)}
 .review-author{font-weight:600}
 .review-source{font-size:.8rem;color:var(--ink-soft)}
-.yandex-widget{margin-top:1.5rem;border-radius:var(--radius);overflow:hidden}
-.yandex-widget iframe{width:100%;border:none;border-radius:var(--radius)}
+.yandex-widget{margin-top:1.5rem;border-radius:var(--radius);overflow:hidden;max-width:100%;width:100%}
+.yandex-widget iframe{width:100%!important;max-width:100%!important;border:none;border-radius:var(--radius);display:block}
+.yandex-widget>div{max-width:100%!important;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.yandex-widget *{max-width:100%;box-sizing:border-box}
 
 /* services page */
 .service-rows{display:flex;flex-direction:column;gap:1rem;margin-top:2.5rem}
@@ -205,6 +214,8 @@ img{max-width:100%;display:block}
 .check-box input{margin-top:.2rem;accent-color:var(--sage);width:16px;height:16px}
 .check-box a{color:var(--sage-dark);text-decoration:underline}
 .booking-aside{display:flex;flex-direction:column;gap:1rem}
+.booking-submit-row{display:flex;flex-direction:column;gap:.7rem}
+.booking-pay-btn{white-space:normal;text-align:center;line-height:1.35}
 .benefits ul{list-style:none;display:flex;flex-direction:column;gap:.7rem}
 .benefits li{position:relative;padding-left:1.5rem;font-size:.9rem}
 .benefits li::before{content:"✓";position:absolute;left:0;color:var(--sage-dark);font-weight:700}

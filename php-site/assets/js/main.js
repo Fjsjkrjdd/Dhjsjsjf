@@ -13,11 +13,14 @@
   // -- Booking: sync online-payment amount with selected service -------
   var select = document.querySelector("[data-service-select]");
   var amount = document.querySelector("[data-pay-amount]");
+  var amountBtn = document.querySelector("[data-pay-amount-btn]");
   if (select && amount) {
     var sync = function () {
       var opt = select.options[select.selectedIndex];
       var price = parseInt(opt.getAttribute("data-price") || "0", 10);
-      amount.textContent = price.toLocaleString("ru-RU");
+      var formatted = price.toLocaleString("ru-RU");
+      amount.textContent = formatted;
+      if (amountBtn) amountBtn.textContent = formatted;
     };
     select.addEventListener("change", sync);
     sync();

@@ -1,6 +1,27 @@
 <?php
 /** Общие функции-помощники. */
 
+// --- Полифилы для PHP 7.4 (функции появились в PHP 8.0) -----------------
+if (!function_exists('str_starts_with')) {
+    function str_starts_with($haystack, $needle)
+    {
+        return $needle === '' || strncmp((string) $haystack, (string) $needle, strlen((string) $needle)) === 0;
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with($haystack, $needle)
+    {
+        $needle = (string) $needle;
+        return $needle === '' || substr((string) $haystack, -strlen($needle)) === $needle;
+    }
+}
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle)
+    {
+        return $needle === '' || strpos((string) $haystack, (string) $needle) !== false;
+    }
+}
+
 require_once __DIR__ . '/db.php';
 
 /* ----------------------------- Базовое -------------------------------- */
@@ -123,7 +144,8 @@ function set_setting(string $key, string $value): void
     if ($driver === 'mysql') {
         $sql = 'INSERT INTO settings (skey, svalue) VALUES (?, ?) ON DUPLICATE KEY UPDATE svalue = VALUES(svalue)';
     } else {
-        $sql = 'INSERT INTO settings (skey, svalue) VALUES (?, ?) ON CONFLICT(skey) DO UPDATE SET svalue = excluded.svalue';
+        // INSERT OR REPLACE поддерживается всеми версиями SQLite (без UPSERT 3.24+).
+        $sql = 'INSERT OR REPLACE INTO settings (skey, svalue) VALUES (?, ?)';
     }
     db()->prepare($sql)->execute([$key, $value]);
 }
@@ -170,6 +192,10 @@ function social_links(): array
     }
     $add('instagram', 'Instagram', setting('instagram') ?: null);
     $add('youtube', 'YouTube', setting('youtube') ?: null);
+    $max = setting('max');
+    if ($max) {
+        $add('max', 'MAX', str_starts_with($max, 'http') ? $max : 'https://max.ru/' . ltrim($max, '@'));
+    }
     $add('yandex', 'Яндекс Карты', setting('yandex_maps') ?: null);
     return $links;
 }
@@ -183,16 +209,53 @@ function tel_href(string $phone): string
 
 function upload_image(string $field): string
 {
-    if (empty($_FILES[$field]) || ($_FILES[$field]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+    $files = upload_images($field);
+    return $files ? $files[0] : '';
+}
+
+/** Загрузка одного или нескольких изображений из поля формы. */
+function upload_images(string $field): array
+{
+    if (empty($_FILES[$field])) {
+        return [];
+    }
+    $file = $_FILES[$field];
+    if (!is_array($file['name'])) {
+        $one = upload_image_file($file);
+        return $one ? [$one] : [];
+    }
+    $out = [];
+    $count = count($file['name']);
+    for ($i = 0; $i < $count; $i++) {
+        if (($file['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            continue;
+        }
+        $single = [
+            'name'     => $file['name'][$i],
+            'type'     => $file['type'][$i],
+            'tmp_name' => $file['tmp_name'][$i],
+            'error'    => $file['error'][$i],
+            'size'     => $file['size'][$i],
+        ];
+        $path = upload_image_file($single);
+        if ($path) {
+            $out[] = $path;
+        }
+    }
+    return $out;
+}
+
+function upload_image_file(array $file): string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
         return '';
     }
     $allowed = [
         'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
         'image/gif' => 'gif', 'image/svg+xml' => 'svg',
     ];
-    $tmp  = $_FILES[$field]['tmp_name'];
-    $info = @getimagesize($tmp);
-    $mime = $_FILES[$field]['type'];
+    $tmp  = $file['tmp_name'];
+    $mime = $file['type'];
     if (function_exists('finfo_open')) {
         $f = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($f, $tmp) ?: $mime;
@@ -208,10 +271,51 @@ function upload_image(string $field): string
     }
     $name = bin2hex(random_bytes(8)) . '.' . $ext;
     if (!move_uploaded_file($tmp, $dir . '/' . $name)) {
-        // На случай тестовой среды (PHP built-in server без upload).
         return '';
     }
     return 'uploads/' . $name;
+}
+
+/** JSON-галерея изображений услуги. */
+function service_gallery(array $service): array
+{
+    $images = [];
+    if (!empty($service['image'])) {
+        $images[] = $service['image'];
+    }
+    if (!empty($service['gallery'])) {
+        $extra = json_decode($service['gallery'], true);
+        if (is_array($extra)) {
+            foreach ($extra as $img) {
+                if ($img && !in_array($img, $images, true)) {
+                    $images[] = $img;
+                }
+            }
+        }
+    }
+    return $images;
+}
+
+/** CSS-переменные цветовой темы из настроек. */
+function theme_css_tag(): string
+{
+    $defaults = [
+        'color_cream' => '#faf7f2', 'color_cream_deep' => '#f3ede3',
+        'color_sage' => '#6f8f7f', 'color_sage_dark' => '#4f6f60', 'color_sage_light' => '#e7efe9',
+        'color_terracotta' => '#c98a6b', 'color_terracotta_dark' => '#b5734f',
+        'color_ink' => '#2c322f', 'color_ink_soft' => '#5b635e',
+    ];
+    $vars = [];
+    foreach ($defaults as $key => $def) {
+        $val = setting($key, $def);
+        if (!preg_match('/^#[0-9a-fA-F]{3,8}$/', $val)) {
+            $val = $def;
+        }
+        $cssKey = str_replace('color_', '', $key);
+        $cssKey = str_replace('_', '-', $cssKey);
+        $vars[] = '--' . $cssKey . ':' . $val;
+    }
+    return '<style id="site-theme">:root{' . implode(';', $vars) . '}</style>';
 }
 
 /* ------------------------------- Прочее ------------------------------- */
@@ -248,6 +352,7 @@ function social_icon_svg(string $key): string
         'whatsapp' => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-5.6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3c-.3.3-.9.9-.9 2.1s.9 2.5 1 2.6c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.7 3.1.6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.1-.1Z"/></svg>',
         'instagram' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>',
         'youtube' => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8.2a3 3 0 0 0-2.1-2.1C18 5.5 12 5.5 12 5.5s-6 0-7.9.6A3 3 0 0 0 2 8.2 31 31 0 0 0 1.7 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.6 7.9.6 7.9.6s6 0 7.9-.6a3 3 0 0 0 2.1-2.1c.3-1.9.3-3.8.3-3.8s0-1.9-.3-3.8ZM10 15V9l5.2 3-5.2 3Z"/></svg>',
+        'max' => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4.2l1.8 6.2L13.8 4H18l-3.4 10.5L17 20h-4.1l-1.9-5.8L9.1 20H5l3.3-5.5L6 4Z"/></svg>',
         'yandex' => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.3 3h2.4v18h-2.4v-7.3h-1L8.1 21H5.4l3.6-7.8C7.3 12.4 6 11 6 8.4 6 5.2 8 3 11 3h2.3Zm0 2H11c-1.6 0-2.6 1.3-2.6 3.4 0 2 1 3.2 2.7 3.2h2.2V5Z"/></svg>',
     ];
     return $i[$key] ?? $i['yandex'];

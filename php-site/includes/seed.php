@@ -3,6 +3,16 @@
 
 function db_seed(PDO $pdo): void
 {
+    // Идемпотентность: очищаем целевые таблицы, чтобы повторный запуск установки
+    // (например, после прерванной первой попытки) не приводил к дублям и ошибкам.
+    foreach (['users', 'settings', 'services', 'diplomas', 'reviews', 'education', 'articles', 'pages', 'content_blocks', 'home_sections'] as $t) {
+        try {
+            $pdo->exec('DELETE FROM ' . $t);
+        } catch (Throwable $e) {
+            // таблица может ещё не существовать — игнорируем
+        }
+    }
+
     // --- Администратор -----------------------------------------------------
     $email = 'admin@chernova-psy.ru';
     $hash  = password_hash('admin12345', PASSWORD_DEFAULT);
@@ -27,6 +37,7 @@ function db_seed(PDO $pdo): void
         'whatsapp'       => '',
         'instagram'      => '',
         'youtube'        => '',
+        'max'            => '',
         'yandex_maps'    => 'https://yandex.ru/maps/org/psikholog_chernova_n_v_/162803965681',
         'yandex_reviews_widget' => '',
         'hero_photo'     => '',
@@ -41,6 +52,15 @@ function db_seed(PDO $pdo): void
         'vat_code' => '1',
         'payment_subject' => 'service',
         'payment_mode' => 'full_payment',
+        'color_cream' => '#faf7f2',
+        'color_cream_deep' => '#f3ede3',
+        'color_sage' => '#6f8f7f',
+        'color_sage_dark' => '#4f6f60',
+        'color_sage_light' => '#e7efe9',
+        'color_terracotta' => '#c98a6b',
+        'color_terracotta_dark' => '#b5734f',
+        'color_ink' => '#2c322f',
+        'color_ink_soft' => '#5b635e',
     ];
     $st = $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES (?, ?)");
     foreach ($settings as $k => $v) {
@@ -114,7 +134,7 @@ function db_seed(PDO $pdo): void
     ]);
 
     // --- Редактируемые тексты страниц --------------------------------------
-    require __DIR__ . '/blocks.php';
+    require_once __DIR__ . '/blocks.php';
     $st = $pdo->prepare("INSERT INTO content_blocks (page, bkey, label, bvalue, sort) VALUES (?,?,?,?,?)");
     $i = 0;
     foreach (block_defaults() as $page => $blocks) {
@@ -124,4 +144,7 @@ function db_seed(PDO $pdo): void
         }
         $i++;
     }
+
+    require_once __DIR__ . '/home_sections.php';
+    home_sections_seed_defaults($pdo);
 }

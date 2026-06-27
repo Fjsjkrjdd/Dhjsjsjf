@@ -27,10 +27,20 @@ $icons = ['user'=>'Человек (индивидуально)','users'=>'Пар
             <div class="adm-field"><label>Порядок</label><input type="number" name="sort" value="<?= (int) ($edit['sort'] ?? 0) ?>"></div>
         </div>
         <div class="adm-field">
-            <label>Изображение (необязательно)</label>
-            <?php if (!empty($edit['image'])): ?><img src="<?= e(asset($edit['image'])) ?>" class="adm-thumb" alt=""><?php endif; ?>
+            <label>Изображения (можно выбрать несколько)</label>
+            <?php
+            $gallery = $edit ? service_gallery($edit) : [];
+            if ($gallery): ?>
+                <div class="adm-thumbs">
+                    <?php foreach ($gallery as $img): ?>
+                        <img src="<?= e(asset($img)) ?>" class="adm-thumb" alt="">
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
             <input type="hidden" name="image" value="<?= e($edit['image'] ?? '') ?>">
             <input type="file" name="image_file" accept="image/*">
+            <input type="file" name="image_files" accept="image/*" multiple>
+            <span class="adm-hint">Первое изображение — обложка карточки. Можно загрузить несколько файлов сразу.</span>
         </div>
         <label class="adm-check"><input type="checkbox" name="is_active" <?= ($edit['is_active'] ?? 1) ? 'checked' : '' ?>> Активна (показывать на сайте)</label>
         <label class="adm-check"><input type="checkbox" name="is_bookable" <?= ($edit['is_bookable'] ?? 1) ? 'checked' : '' ?>> Доступна для записи / оплаты</label>

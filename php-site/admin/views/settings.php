@@ -1,5 +1,5 @@
 <?php /** @var array $s */
-$v = fn(string $k) => e($s[$k] ?? '');
+$v = function ($k) use ($s) { return e(isset($s[$k]) ? $s[$k] : ''); };
 ?>
 <form method="post" action="<?= e(admin_url('settings')) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
@@ -22,12 +22,12 @@ $v = fn(string $k) => e($s[$k] ?? '');
             <div class="adm-field">
                 <label>Главное фото (обложка)</label>
                 <?php if ($s['hero_photo'] ?? ''): ?><img src="<?= e(asset($s['hero_photo'])) ?>" class="adm-thumb" alt=""><?php endif; ?>
-                <input type="hidden" name="hero_photo" value="<?= $v('hero_photo') ?>"><input type="file" name="hero_photo_file" accept="image/*">
+                <input type="hidden" name="hero_photo" value="<?= $v('hero_photo') ?>"><input type="file" name="hero_photo_file" accept="image/*" multiple>
             </div>
             <div class="adm-field">
                 <label>Фото для «Обо мне»</label>
                 <?php if ($s['about_photo'] ?? ''): ?><img src="<?= e(asset($s['about_photo'])) ?>" class="adm-thumb" alt=""><?php endif; ?>
-                <input type="hidden" name="about_photo" value="<?= $v('about_photo') ?>"><input type="file" name="about_photo_file" accept="image/*">
+                <input type="hidden" name="about_photo" value="<?= $v('about_photo') ?>"><input type="file" name="about_photo_file" accept="image/*" multiple>
             </div>
         </div>
     </div>
@@ -52,6 +52,7 @@ $v = fn(string $k) => e($s[$k] ?? '');
             <div class="adm-field"><label>WhatsApp</label><input name="whatsapp" value="<?= $v('whatsapp') ?>" placeholder="номер или ссылка"></div>
             <div class="adm-field"><label>Instagram</label><input name="instagram" value="<?= $v('instagram') ?>"></div>
             <div class="adm-field"><label>YouTube</label><input name="youtube" value="<?= $v('youtube') ?>"></div>
+            <div class="adm-field"><label>MAX (max.ru)</label><input name="max" value="<?= $v('max') ?>" placeholder="https://max.ru/... или @ник"></div>
             <div class="adm-field"><label>Яндекс Карты</label><input name="yandex_maps" value="<?= $v('yandex_maps') ?>"></div>
         </div>
     </div>
@@ -72,8 +73,39 @@ $v = fn(string $k) => e($s[$k] ?? '');
     </div>
 
     <div class="adm-card">
-        <h2>Онлайн-касса (ЮKassa)</h2>
-        <p class="muted" style="margin-bottom:1rem">Данные магазина берутся в личном кабинете ЮKassa. Секретный ключ хранится на сервере и не отображается. URL для уведомлений: <code><?= e(url('pay/webhook')) ?></code></p>
+        <h2>Цветовая гамма сайта</h2>
+        <p class="adm-hint" style="margin-bottom:1rem">Настройте основные цвета. Изменения сохраняются и применяются на сайте и в админ-панели.</p>
+        <div class="adm-grid cols-3">
+            <?php
+            $colors = [
+                'color_cream' => 'Фон (кремовый)',
+                'color_cream_deep' => 'Фон глубокий',
+                'color_sage' => 'Акцент (шалфей)',
+                'color_sage_dark' => 'Акцент тёмный',
+                'color_sage_light' => 'Акцент светлый',
+                'color_terracotta' => 'Терракота',
+                'color_terracotta_dark' => 'Терракота тёмная',
+                'color_ink' => 'Текст основной',
+                'color_ink_soft' => 'Текст вторичный',
+            ];
+            $colorDefaults = [
+                'color_cream' => '#faf7f2', 'color_cream_deep' => '#f3ede3',
+                'color_sage' => '#6f8f7f', 'color_sage_dark' => '#4f6f60', 'color_sage_light' => '#e7efe9',
+                'color_terracotta' => '#c98a6b', 'color_terracotta_dark' => '#b5734f',
+                'color_ink' => '#2c322f', 'color_ink_soft' => '#5b635e',
+            ];
+            foreach ($colors as $key => $label):
+                $def = $colorDefaults[$key] ?? '#faf7f2';
+                $val = preg_match('/^#[0-9a-fA-F]{3,8}$/', $s[$key] ?? '') ? $s[$key] : $def;
+            ?>
+            <div class="adm-field"><label><?= e($label) ?></label><input type="color" name="<?= e($key) ?>" value="<?= e($val) ?>"></div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <h2>Онлайн-касса (ЮKassa / Точка Банк)</h2>
+        <p class="muted" style="margin-bottom:1rem">Для эквайринга Точка Банк подключите ЮKassa в личном кабинете банка и укажите shopId и секретный ключ ниже. URL для уведомлений: <code><?= e(url('pay/webhook')) ?></code></p>
         <label class="adm-check"><input type="checkbox" name="payments_enabled" <?= ($s['payments_enabled'] ?? '0') === '1' ? 'checked' : '' ?>> Принимать онлайн-оплату</label>
         <div class="adm-grid cols-2">
             <div class="adm-field"><label>shopId</label><input name="yookassa_shop_id" value="<?= $v('yookassa_shop_id') ?>"></div>

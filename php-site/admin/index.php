@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/yookassa.php';
 require_once __DIR__ . '/../includes/blocks.php';
+require_once __DIR__ . '/../includes/home_sections.php';
 
 auth_boot();
 
@@ -64,7 +65,7 @@ if ($isPost) {
 
     switch ($p) {
         case 'settings':
-            $keys = ['site_name','owner_name','profession','tagline','logo_text','phone','email','address','city','working_hours','map_embed','vk','telegram','whatsapp','instagram','youtube','yandex_maps','yandex_reviews_widget','meta_title','meta_description','yookassa_shop_id','tax_system_code','vat_code','payment_subject','payment_mode'];
+            $keys = ['site_name','owner_name','profession','tagline','logo_text','phone','email','address','city','working_hours','map_embed','vk','telegram','whatsapp','instagram','youtube','max','yandex_maps','yandex_reviews_widget','meta_title','meta_description','yookassa_shop_id','tax_system_code','vat_code','payment_subject','payment_mode','color_cream','color_cream_deep','color_sage','color_sage_dark','color_sage_light','color_terracotta','color_terracotta_dark','color_ink','color_ink_soft'];
             foreach ($keys as $k) {
                 set_setting($k, pv($k));
             }
@@ -75,9 +76,15 @@ if ($isPost) {
                 set_setting('yookassa_secret_key', $secret);
             }
             foreach (['hero_photo' => 'hero_photo_file', 'about_photo' => 'about_photo_file'] as $sk => $field) {
-                $up = upload_image($field);
-                if ($up) {
-                    set_setting($sk, $up);
+                $uploaded = upload_images($field);
+                if (!$uploaded) {
+                    $one = upload_image($field);
+                    if ($one) {
+                        $uploaded = [$one];
+                    }
+                }
+                if ($uploaded) {
+                    set_setting($sk, $uploaded[0]);
                 } elseif (pv($sk) !== '') {
                     set_setting($sk, pv($sk));
                 }
@@ -105,15 +112,32 @@ if ($isPost) {
             $title = pv('title');
             $slug  = pv('slug') ?: slugify($title);
             $image = upload_image('image_file') ?: pv('image');
+            $gallery = [];
+            if ($id) {
+                $st = $pdo->prepare('SELECT gallery FROM services WHERE id = ?');
+                $st->execute([$id]);
+                $row = $st->fetch();
+                if ($row && !empty($row['gallery'])) {
+                    $gallery = json_decode($row['gallery'], true) ?: [];
+                }
+            }
+            $newImages = upload_images('image_files');
+            if ($newImages) {
+                $gallery = array_merge($gallery, $newImages);
+                if (!$image) {
+                    $image = $newImages[0];
+                }
+            }
+            $galleryJson = $gallery ? json_encode(array_values(array_unique($gallery)), JSON_UNESCAPED_UNICODE) : null;
             $data  = [$slug, $title, pv('short_description'), pv('description'), pint('price'),
                 pv('old_price') !== '' ? pint('old_price') : null, pv('duration'), pv('icon', 'heart'),
-                $image, pb('is_active'), pb('is_bookable'), pint('sort')];
+                $image, $galleryJson, pb('is_active'), pb('is_bookable'), pint('sort')];
             if ($id) {
-                $sql = 'UPDATE services SET slug=?,title=?,short_description=?,description=?,price=?,old_price=?,duration=?,icon=?,image=?,is_active=?,is_bookable=?,sort=? WHERE id=?';
+                $sql = 'UPDATE services SET slug=?,title=?,short_description=?,description=?,price=?,old_price=?,duration=?,icon=?,image=?,gallery=?,is_active=?,is_bookable=?,sort=? WHERE id=?';
                 $data[] = $id;
                 $pdo->prepare($sql)->execute($data);
             } else {
-                $pdo->prepare('INSERT INTO services (slug,title,short_description,description,price,old_price,duration,icon,image,is_active,is_bookable,sort) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')->execute($data);
+                $pdo->prepare('INSERT INTO services (slug,title,short_description,description,price,old_price,duration,icon,image,gallery,is_active,is_bookable,sort) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')->execute($data);
             }
             flash('Услуга сохранена.');
             redirect(admin_url('services'));
@@ -126,13 +150,20 @@ if ($isPost) {
                 redirect(admin_url('diplomas'));
             }
             $image = upload_image('image_file') ?: pv('image');
-            if ($image === '') {
-                flash('Выберите изображение для загрузки.');
+            $images = upload_images('image_files');
+            if ($image && !in_array($image, $images, true)) {
+                array_unshift($images, $image);
+            }
+            if (!$images) {
+                flash('Выберите одно или несколько изображений для загрузки.');
                 redirect(admin_url('diplomas'));
             }
-            $pdo->prepare('INSERT INTO diplomas (title,description,image,sort,is_published) VALUES (?,?,?,?,1)')
-                ->execute([pv('title', 'Диплом'), pv('description'), $image, pint('sort')]);
-            flash('Диплом добавлен.');
+            $sortBase = pint('sort');
+            $st = $pdo->prepare('INSERT INTO diplomas (title,description,image,sort,is_published) VALUES (?,?,?,?,1)');
+            foreach ($images as $i => $img) {
+                $st->execute([pv('title', 'Диплом'), pv('description'), $img, $sortBase + $i]);
+            }
+            flash(count($images) > 1 ? 'Загружено изображений: ' . count($images) : 'Диплом добавлен.');
             redirect(admin_url('diplomas'));
 
         case 'education':
@@ -239,6 +270,51 @@ if ($isPost) {
                 ->execute([password_hash($new, PASSWORD_DEFAULT), $user['id']]);
             flash('Пароль изменён.');
             redirect(admin_url('account'));
+
+        case 'home-blocks':
+            $action = pv('action');
+            if ($action === 'add') {
+                $type = pv('section_type', 'custom');
+                $types = home_section_types();
+                if (!isset($types[$type])) {
+                    $type = 'custom';
+                }
+                $pdo->prepare('INSERT INTO home_sections (section_type, title, subtitle, body, sort, is_active) VALUES (?,?,?,?,?,1)')
+                    ->execute([$type, pv('title'), '', pv('body'), pint('sort')]);
+                flash('Блок добавлен.');
+            } elseif ($action === 'delete') {
+                $id = pint('id');
+                $st = $pdo->prepare('SELECT section_type FROM home_sections WHERE id = ?');
+                $st->execute([$id]);
+                $row = $st->fetch();
+                if ($row && $row['section_type'] === 'custom') {
+                    $pdo->prepare('DELETE FROM home_sections WHERE id = ?')->execute([$id]);
+                    flash('Блок удалён.');
+                }
+            } elseif ($action === 'toggle') {
+                $pdo->prepare('UPDATE home_sections SET is_active = CASE WHEN is_active = 1 THEN 0 ELSE 1 END WHERE id = ?')
+                    ->execute([pint('id')]);
+                flash('Статус блока обновлён.');
+            } elseif ($action === 'move') {
+                $id = pint('id');
+                $dir = pv('dir') === 'down' ? 1 : -1;
+                $st = $pdo->prepare('SELECT id, sort FROM home_sections WHERE id = ?');
+                $st->execute([$id]);
+                $cur = $st->fetch();
+                if ($cur) {
+                    $cmp = $dir < 0 ? '<' : '>';
+                    $ord = $dir < 0 ? 'DESC' : 'ASC';
+                    $st2 = $pdo->prepare("SELECT id, sort FROM home_sections WHERE sort $cmp ? ORDER BY sort $ord, id $ord LIMIT 1");
+                    $st2->execute([(int) $cur['sort']]);
+                    $swap = $st2->fetch();
+                    if ($swap) {
+                        $pdo->prepare('UPDATE home_sections SET sort = ? WHERE id = ?')->execute([(int) $swap['sort'], $id]);
+                        $pdo->prepare('UPDATE home_sections SET sort = ? WHERE id = ?')->execute([(int) $cur['sort'], $swap['id']]);
+                    }
+                }
+                flash('Порядок обновлён.');
+            }
+            redirect(admin_url('home-blocks'));
     }
 }
 
@@ -254,6 +330,14 @@ switch ($p) {
             'articles' => (int) $pdo->query('SELECT COUNT(*) FROM articles')->fetchColumn(),
             'new_orders' => (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='new'")->fetchColumn(),
             'paid_orders' => (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='paid'")->fetchColumn(),
+        ]);
+        break;
+
+    case 'home-blocks':
+        render_admin('home_blocks', [
+            'title' => 'Блоки главной',
+            'items' => home_sections_all(),
+            'types' => home_section_types(),
         ]);
         break;
 

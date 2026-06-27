@@ -19,7 +19,6 @@ function db(): PDO
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
-        $pdo->driver_name = 'mysql';
     } else {
         $path = $cfg['sqlite_path'];
         $dir  = dirname($path);
@@ -41,6 +40,40 @@ function db(): PDO
 function db_driver(PDO $pdo): string
 {
     return $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+}
+
+/** Миграции для уже установленных сайтов. */
+function db_migrate(PDO $pdo): void
+{
+    if (!db_column_exists($pdo, 'services', 'gallery')) {
+        $pdo->exec('ALTER TABLE services ADD COLUMN gallery TEXT');
+    }
+
+    try {
+        $cnt = (int) $pdo->query('SELECT COUNT(*) FROM home_sections')->fetchColumn();
+        if ($cnt === 0) {
+            require_once __DIR__ . '/home_sections.php';
+            home_sections_seed_defaults($pdo);
+        }
+    } catch (Throwable $e) {
+        // Таблица ещё не создана — пропускаем.
+    }
+}
+
+function db_column_exists(PDO $pdo, string $table, string $column): bool
+{
+    if (db_driver($pdo) === 'mysql') {
+        $st = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
+        $st->execute([$table, $column]);
+        return (int) $st->fetchColumn() > 0;
+    }
+    $cols = $pdo->query('PRAGMA table_info(' . $table . ')')->fetchAll();
+    foreach ($cols as $c) {
+        if (($c['name'] ?? '') === $column) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /** Создаёт таблицы, если их ещё нет, и наполняет стартовыми данными. */
@@ -81,6 +114,7 @@ function db_install(PDO $pdo): void
             duration VARCHAR(120),
             icon VARCHAR(40),
             image VARCHAR(255),
+            gallery TEXT,
             is_active INT DEFAULT 1,
             is_bookable INT DEFAULT 1,
             sort INT DEFAULT 0
@@ -151,17 +185,37 @@ function db_install(PDO $pdo): void
             receipt_status VARCHAR(40) DEFAULT 'none',
             created_at VARCHAR(40)
         )$eng",
+        "CREATE TABLE IF NOT EXISTS home_sections (
+            id $pk,
+            section_type VARCHAR(60) NOT NULL,
+            title VARCHAR(255) DEFAULT '',
+            subtitle TEXT,
+            body TEXT,
+            sort INT DEFAULT 0,
+            is_active INT DEFAULT 1
+        )$eng",
     ];
 
     foreach ($tables as $sql) {
         $pdo->exec($sql);
     }
 
+    db_migrate($pdo);
+
     // Признак того, что первичное наполнение уже выполнено.
     $done = $pdo->query("SELECT svalue FROM settings WHERE skey = 'installed'")->fetchColumn();
     if (!$done) {
-        require __DIR__ . '/seed.php';
-        db_seed($pdo);
-        $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES ('installed', '1')")->execute();
+        require_once __DIR__ . '/seed.php';
+        try {
+            $pdo->beginTransaction();
+            db_seed($pdo);
+            $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES ('installed', '1')")->execute();
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
     }
 }

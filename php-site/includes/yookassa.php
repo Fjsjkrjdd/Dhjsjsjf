@@ -5,9 +5,15 @@ require_once __DIR__ . '/functions.php';
 
 function payments_configured(): bool
 {
-    return setting('payments_enabled') === '1'
+    return payments_accepted()
         && setting('yookassa_shop_id') !== ''
         && setting('yookassa_secret_key') !== '';
+}
+
+/** Включена ли онлайн-оплата в настройках (для отображения кнопок). */
+function payments_accepted(): bool
+{
+    return setting('payments_enabled') === '1';
 }
 
 function yk_auth_header(): string
