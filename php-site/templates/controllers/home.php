@@ -4,6 +4,7 @@ $blocks   = blocks_for('home');
 $services = db()->query('SELECT * FROM services WHERE is_active = 1 ORDER BY sort ASC')->fetchAll();
 $diplomas = db()->query('SELECT * FROM diplomas WHERE is_published = 1 ORDER BY sort ASC')->fetchAll();
 $reviews  = db()->query('SELECT * FROM reviews WHERE is_published = 1 ORDER BY sort ASC LIMIT 6')->fetchAll();
+$articles = db()->query('SELECT * FROM articles WHERE is_published = 1 ORDER BY published_at DESC LIMIT 3')->fetchAll();
 $sections = home_sections_all(true);
 
 render('home', [
@@ -11,5 +12,6 @@ render('home', [
     'services' => $services,
     'diplomas' => $diplomas,
     'reviews'  => $reviews,
+    'articles' => $articles,
     'sections' => $sections,
 ]);
