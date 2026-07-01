@@ -7,11 +7,11 @@ import { telHref } from "@/lib/socials";
 
 const NAV = [
   { href: "/", label: "Главная" },
-  { href: "/services", label: "Услуги и цены" },
-  { href: "/about", label: "Обо мне" },
-  { href: "/reviews", label: "Отзывы" },
-  { href: "/articles", label: "Статьи" },
-  { href: "/contacts", label: "Контакты" },
+  { href: "/#about", label: "Обо мне" },
+  { href: "/#services", label: "Услуги" },
+  { href: "/#approach", label: "Мой подход" },
+  { href: "/#first-meeting", label: "Первая встреча" },
+  { href: "/#contacts", label: "Контакты" },
 ];
 
 export default function Header({
@@ -24,10 +24,14 @@ export default function Header({
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-deep bg-cream/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-[#e1d4c4] bg-[#f7f2eb]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage text-lg font-semibold text-white font-[family-name:var(--font-display)]">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          onClick={() => setOpen(false)}
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f2d2b] text-lg font-semibold text-white font-[family-name:var(--font-display)]">
             Н
           </span>
           <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-ink">
@@ -40,7 +44,7 @@ export default function Header({
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-ink-soft transition hover:text-sage-dark"
+              className="text-sm font-medium text-ink-soft transition hover:text-[#9b7b62]"
             >
               {item.label}
             </Link>
@@ -50,14 +54,14 @@ export default function Header({
         <div className="hidden items-center gap-4 lg:flex">
           <a
             href={telHref(phone)}
-            className="flex items-center gap-2 text-sm font-semibold text-ink hover:text-sage-dark"
+            className="flex items-center gap-2 text-sm font-semibold text-ink hover:text-[#9b7b62]"
           >
             <PhoneIcon className="h-4 w-4" />
             {phone}
           </a>
           <Link
             href="/booking"
-            className="rounded-full bg-sage px-5 py-2 text-sm font-semibold text-white transition hover:bg-sage-dark"
+            className="rounded-full bg-[#2f2d2b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#9b7b62]"
           >
             Записаться
           </Link>
@@ -69,7 +73,13 @@ export default function Header({
           onClick={() => setOpen((v) => !v)}
           className="flex h-10 w-10 items-center justify-center rounded-lg text-ink lg:hidden"
         >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.8}>
+          <svg
+            viewBox="0 0 24 24"
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+          >
             {open ? (
               <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
             ) : (
@@ -93,13 +103,16 @@ export default function Header({
               </Link>
             ))}
             <div className="flex flex-col gap-3 pt-4">
-              <a href={telHref(phone)} className="flex items-center gap-2 font-semibold text-ink">
+              <a
+                href={telHref(phone)}
+                className="flex items-center gap-2 font-semibold text-ink"
+              >
                 <PhoneIcon className="h-4 w-4" /> {phone}
               </a>
               <Link
                 href="/booking"
                 onClick={() => setOpen(false)}
-                className="rounded-full bg-sage px-5 py-2.5 text-center text-sm font-semibold text-white"
+                className="rounded-full bg-[#2f2d2b] px-5 py-2.5 text-center text-sm font-semibold text-white"
               >
                 Записаться на консультацию
               </Link>
