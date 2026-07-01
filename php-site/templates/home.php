@@ -20,6 +20,8 @@ $first_meeting = [
     ['Проверяем контакт', 'Вы понимаете, комфортен ли вам мой стиль работы. Решение продолжать всегда остаётся за вами.'],
 ];
 $links = social_links();
+$home_hero = 'uploads/home-hero.jpg';
+$home_about = 'uploads/home-about.jpg';
 $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_bookable'])));
 ?>
 <section id="home" class="landing-hero">
@@ -40,11 +42,7 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
             <span class="landing-orbit landing-orbit-one"></span>
             <span class="landing-orbit landing-orbit-two"></span>
             <figure class="landing-portrait">
-                <?php if (setting('hero_photo')): ?>
-                    <img src="<?= e(asset(setting('hero_photo'))) ?>" alt="<?= e(setting('owner_name')) ?>">
-                <?php else: ?>
-                    <div class="portrait-placeholder">Н·Ч</div>
-                <?php endif; ?>
+                <img src="<?= e(asset($home_hero)) ?>" alt="<?= e(setting('owner_name')) ?>">
             </figure>
         </div>
     </div>
@@ -74,7 +72,7 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
 
 <section id="about" class="container landing-about">
     <div class="landing-about-photo">
-        <?php if (setting('hero_photo')): ?><img src="<?= e(asset(setting('hero_photo'))) ?>" alt="<?= e(setting('owner_name')) ?>"><?php else: ?><div class="portrait-placeholder">Н·Ч</div><?php endif; ?>
+        <img src="<?= e(asset($home_about)) ?>" alt="<?= e(setting('owner_name')) ?>">
     </div>
     <div>
         <p class="landing-kicker">Давайте знакомиться</p>
@@ -93,7 +91,7 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
         <p class="landing-text">Я работаю спокойно, бережно и без оценок. Важно не «чинить» человека, а помочь ему понять свои реакции, увидеть повторяющиеся сценарии и найти новые способы быть с собой и близкими.</p>
         <ul><?php foreach ($approach as $item): ?><li><?= e($item) ?></li><?php endforeach; ?></ul>
     </div>
-    <figure><?php if (setting('hero_photo')): ?><img src="<?= e(asset(setting('hero_photo'))) ?>" alt="<?= e(setting('owner_name')) ?>"><?php endif; ?></figure>
+    <figure><img src="<?= e(asset($home_about)) ?>" alt="<?= e(setting('owner_name')) ?>"></figure>
 </section>
 
 <?php if ($services): ?>
