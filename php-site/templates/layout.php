@@ -4,11 +4,11 @@ $title = isset($page_title) && $page_title ? $page_title . ' — ' . setting('si
 $desc  = $meta_description ?? setting('meta_description');
 $nav = [
     ''         => 'Главная',
-    '#about' => 'Обо мне',
-    '#services' => 'Услуги',
-    '#approach' => 'Мой подход',
-    '#first-meeting' => 'Первая встреча',
-    '#contacts' => 'Контакты',
+    'services' => 'Услуги и цены',
+    'about'    => 'Обо мне',
+    'reviews'  => 'Отзывы',
+    'articles' => 'Статьи',
+    'contacts' => 'Контакты',
 ];
 $cur = trim($_GET['route'] ?? '', '/');
 $cur0 = explode('/', $cur)[0];
@@ -34,7 +34,7 @@ $cur0 = explode('/', $cur)[0];
         </a>
         <nav class="main-nav" id="mainNav">
             <?php foreach ($nav as $href => $label): ?>
-                <a href="<?= e($href === '' ? url() : url($href)) ?>" class="<?= ($href === '' && $cur0 === '') ? 'active' : '' ?>"><?= e($label) ?></a>
+                <a href="<?= e(url($href)) ?>" class="<?= ($cur0 === $href) ? 'active' : '' ?>"><?= e($label) ?></a>
             <?php endforeach; ?>
         </nav>
         <div class="header-cta">
