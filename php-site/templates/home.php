@@ -57,16 +57,14 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
             <a href="<?= e(tel_href(setting('phone'))) ?>" class="landing-card-phone"><?= e(setting('phone')) ?></a>
             <?php require __DIR__ . '/partials/social_bar.php'; ?>
         </aside>
-        <?php if ($bookable): ?>
-            <form class="landing-form booking-form" method="post" action="<?= e(url('booking/submit')) ?>" data-booking>
-                <label class="field"><span>Услуга</span><select name="service" data-service-select><?php foreach ($bookable as $s): ?><option value="<?= e($s['slug']) ?>" data-price="<?= (int) $s['price'] ?>"><?= e($s['title']) ?><?= $s['price'] ? ' — ' . format_price((int) $s['price']) . ' ₽' : '' ?><?= $s['duration'] ? ' (' . e($s['duration']) . ')' : '' ?></option><?php endforeach; ?></select></label>
-                <div class="field-row"><label class="field"><span>Ваше имя *</span><input type="text" name="name" required placeholder="Имя"></label><label class="field"><span>Телефон *</span><input type="tel" name="phone" required placeholder="+7 (___) ___-__-__"></label></div>
-                <div class="field-row"><label class="field"><span>E-mail</span><input type="email" name="email" placeholder="email@example.com"></label><label class="field"><span>Удобная дата / время</span><input type="text" name="preferred_date" placeholder="Например, будни после 18:00"></label></div>
-                <label class="field"><span>Комментарий</span><textarea name="comment" rows="3" placeholder="Кратко опишите ваш запрос"></textarea></label>
-                <label class="check-box"><input type="checkbox" name="agree" value="1" required><span>Я согласен(а) на обработку персональных данных в соответствии с <a href="<?= e(url('privacy')) ?>">политикой конфиденциальности</a>.</span></label>
-                <button type="submit" class="landing-btn landing-btn-dark landing-btn-block">Отправить заявку</button>
-            </form>
-        <?php endif; ?>
+        <form class="landing-form landing-short-form booking-form" method="post" action="<?= e(url('booking/submit')) ?>">
+            <p class="form-title">Форма заявки сайт</p>
+            <label class="field"><span>Ваше имя</span><input type="text" name="name" required></label>
+            <label class="field"><span>Телефон</span><input type="tel" name="phone" required></label>
+            <label class="field"><span>Какой у Вас запрос?</span><textarea name="comment" rows="5"></textarea></label>
+            <label class="check-box"><input type="checkbox" name="agree" value="1" required><span>Я ознакомлен с <a href="<?= e(url('privacy')) ?>">политикой конфиденциальности</a> и даю согласие на обработку персональных данных.</span></label>
+            <button type="submit" class="landing-btn landing-btn-dark landing-btn-block">Отправить</button>
+        </form>
     </div>
 </section>
 
@@ -84,6 +82,15 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
 
 <section class="landing-stats"><div class="container"><div><strong>700+</strong><span>часов профильного обучения</span></div><div><strong>5+</strong><span>лет практики</span></div><div><strong>100%</strong><span>конфиденциальность</span></div><div><strong>30</strong><span>минут на первую встречу</span></div></div></section>
 
+<section class="landing-photo-strip" aria-label="Фотографии кабинета и психолога">
+    <div class="container">
+        <img src="<?= e(asset($home_hero)) ?>" alt="<?= e(setting('owner_name')) ?>">
+        <img src="<?= e(asset($home_about)) ?>" alt="Кабинет психолога">
+        <img src="<?= e(asset($home_hero)) ?>" alt="<?= e(setting('owner_name')) ?>">
+        <img src="<?= e(asset($home_about)) ?>" alt="Пространство консультаций">
+    </div>
+</section>
+
 <section id="approach" class="container landing-approach">
     <div>
         <p class="landing-kicker">Как проходит работа с психологом</p>
@@ -92,6 +99,34 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
         <ul><?php foreach ($approach as $item): ?><li><?= e($item) ?></li><?php endforeach; ?></ul>
     </div>
     <figure><img src="<?= e(asset($home_about)) ?>" alt="<?= e(setting('owner_name')) ?>"></figure>
+</section>
+
+<section class="landing-psych container">
+    <figure><img src="<?= e(asset($home_hero)) ?>" alt="<?= e(setting('owner_name')) ?>"></figure>
+    <div>
+        <p class="landing-kicker">О психологе</p>
+        <h2><?= e(setting('owner_name')) ?></h2>
+        <p class="landing-text"><?= e(setting('profession')) ?>, психолог-консультант. Работаю онлайн по всей России и очно в Ростове-на-Дону.</p>
+        <p class="landing-text">Образование и сертификаты можно редактировать в админке — блоки сайта сохраняют структуру PHP-основы и используют ваши данные.</p>
+    </div>
+</section>
+
+<section class="landing-repeat" id="landing-repeat">
+    <div class="container landing-booking-grid">
+        <aside class="landing-dark-card">
+            <p class="landing-kicker">Можно начать с малого</p>
+            <h2>Иногда самый сложный шаг — написать.</h2>
+            <p>Вы можете записаться на первую консультацию психолога онлайн и спокойно разобраться в своём состоянии.</p>
+        </aside>
+        <form class="landing-form landing-short-form booking-form" method="post" action="<?= e(url('booking/submit')) ?>">
+            <p class="form-title">Форма заявки сайт</p>
+            <label class="field"><span>Ваше имя</span><input type="text" name="name" required></label>
+            <label class="field"><span>Телефон</span><input type="tel" name="phone" required></label>
+            <label class="field"><span>Какой у Вас запрос?</span><textarea name="comment" rows="5"></textarea></label>
+            <label class="check-box"><input type="checkbox" name="agree" value="1" required><span>Я ознакомлен с <a href="<?= e(url('privacy')) ?>">политикой конфиденциальности</a> и даю согласие на обработку персональных данных.</span></label>
+            <button type="submit" class="landing-btn landing-btn-dark landing-btn-block">Отправить</button>
+        </form>
+    </div>
 </section>
 
 <?php if ($services): ?>
@@ -113,5 +148,16 @@ $bookable = array_values(array_filter($services, static fn($s) => !empty($s['is_
 <?php if (!empty($articles)): ?>
 <section class="landing-blog"><div class="container"><p class="landing-kicker">Блог</p><h2>Спокойно о сложном</h2><div class="articles-grid"><?php foreach ($articles as $a): ?><article class="card article-card"><a href="<?= e(url('articles/' . $a['slug'])) ?>" class="article-cover"><?php if ($a['cover']): ?><img src="<?= e(asset($a['cover'])) ?>" alt="<?= e($a['title']) ?>"><?php else: ?><span class="cover-stub">Статья</span><?php endif; ?></a><div class="article-body"><span class="article-cat"><?= e($a['category']) ?></span><h2><a href="<?= e(url('articles/' . $a['slug'])) ?>"><?= e($a['title']) ?></a></h2></div></article><?php endforeach; ?></div></div></section>
 <?php endif; ?>
+
+<section class="landing-quote-strip">
+    <div class="container">
+        <img src="<?= e(asset($home_about)) ?>" alt="<?= e(setting('owner_name')) ?>">
+        <div>
+            <p>Иногда путь к спокойствию начинается не с силы, а с разрешения быть уязвимой.</p>
+            <p>Работа с психологом — это не про исправление себя, а про возвращение к себе настоящей.</p>
+            <p>Когда рядом появляется поддержка, даже самые сложные чувства перестают быть такими пугающими.</p>
+        </div>
+    </div>
+</section>
 
 <section id="contacts" class="landing-contacts"><div class="container"><div><p class="landing-kicker">Связаться со мной</p><h2>Вы можете написать или позвонить мне в удобном формате.</h2><p>Я отвечаю лично и стараюсь делать это в течение дня.</p><a href="<?= e(tel_href(setting('phone'))) ?>" class="landing-contact-phone"><?= e(setting('phone')) ?></a><?php require __DIR__ . '/partials/social_bar.php'; ?></div><blockquote>Я не исправляю людей — я помогаю им бережно вернуть связь с собой.</blockquote></div></section>
